@@ -29,10 +29,9 @@ private:
     std::condition_variable condition;
     bool stop;
 };
- 
+
 // the constructor just launches some amount of workers
-inline ThreadPool::ThreadPool(size_t threads)
-    :   stop(false)
+inline ThreadPool::ThreadPool(size_t threads) : stop(false)
 {
     for(size_t i = 0;i<threads;++i)
         workers.emplace_back(
@@ -91,8 +90,21 @@ inline ThreadPool::~ThreadPool()
         stop = true;
     }
     condition.notify_all();
+
+    // Start timer
+    auto start = std::chrono::high_resolution_clock::now();
+
     for(std::thread &worker: workers)
+    {
         worker.join();
+    }
+
+    // End Timer
+    auto end = std::chrono::high_resolution_clock::now();
+
+    // Calculate and output the difference
+    std::chrono::duration<double> duration = end - start;
+    std::cout << "Parallel algorithm using thread pool resulted in " << duration.count()  << " sec" << std::endl;
 }
 
 #endif
